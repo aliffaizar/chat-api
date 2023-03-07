@@ -21,7 +21,10 @@ export class ChatGateway {
   @SubscribeMessage('createChat')
   async create(@MessageBody() data: { userId: string; avatar: string }) {
     const chat = await this.chatService.create(data.userId, data.avatar);
-    this.server.emit('inviteAgent', chat.roomId);
+    this.server.emit('inviteAgent', {
+      roomId: chat.roomId,
+      status: 'pendding',
+    });
     return chat;
   }
 
@@ -37,8 +40,21 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('acceptInvitation')
-  acceptInvitation(@MessageBody() data: { roomId: string; userId: string }) {
-    return this.chatService.acceptInvitation(data.roomId, data.userId);
+  acceptInvitation(
+    @MessageBody()
+    data: {
+      roomId: string;
+      userId: string;
+      status: 'accepted' | 'pendding';
+    },
+  ) {
+    if (data.status === 'pendding') {
+      return this.chatService.acceptInvitation(data.roomId, data.userId);
+    }
+    this.server.emit('inviteAgent', {
+      roomId: data.roomId,
+      status: 'accepted',
+    });
   }
 
   @SubscribeMessage('sendMessage')

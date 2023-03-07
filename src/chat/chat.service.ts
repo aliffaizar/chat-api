@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AuthService } from 'src/auth/auth.service';
 
 export interface Message {
   sender: string;
@@ -13,6 +14,7 @@ export interface Chat {
 
 @Injectable()
 export class ChatService {
+  constructor(private readonly authService: AuthService) {}
   private readonly chats = [];
 
   create(userId: string, avatar: string) {
